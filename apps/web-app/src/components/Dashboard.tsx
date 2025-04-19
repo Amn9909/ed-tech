@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
 import TableContent from './ui/TableContent';
+import { FaFileUpload } from "react-icons/fa";
+
 
 export interface Student {
   id: number;
@@ -24,6 +26,10 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
 
+
+  const fileInputRef = useRef(null)
+
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
@@ -36,6 +42,7 @@ const Dashboard = () => {
   }, [])
 
   const fetchStudents = async () => {
+
     try {
       const response = await axios.get('http://localhost:3000/students', {
         headers: {
@@ -63,13 +70,13 @@ const Dashboard = () => {
         },
       });
       console.log('Upload success:', response.data);
-      alert('Upload successful!');
       setIsModalOpen(false);
     } catch (error) {
+      setIsModalOpen(false)
       console.error('Upload error:', error);
-      alert('Upload failed!');
     }
   };
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -78,13 +85,18 @@ const Dashboard = () => {
     }
   };
 
+
+  const fileUploadFunction = () => {
+    fileInputRef.current?.click()
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
       <header className="bg-white shadow-md py-4 px-6 flex justify-between items-center sticky top-0 z-10">
         <h1 className="text-2xl font-semibold text-gray-800">Student Dashboard</h1>
         <div className="flex gap-4">
-          <Button onClick={() => setIsModalOpen(true)}>Import</Button>
+          <Button onClick={() => setIsModalOpen(true)}>Import <FaFileUpload /></Button>
           <Button variant="destructive" onClick={handleLogout}>Logout</Button>
         </div>
       </header>
@@ -94,12 +106,22 @@ const Dashboard = () => {
         <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
             <h2 className="text-xl font-semibold mb-4">Import Students</h2>
-            <input
-              type="file"
-              accept=".xlsx"
-              onChange={handleFileChange}
-              className="mb-4 block w-full"
-            />
+
+            <div>
+              <button className='hover:scale-150' onClick={fileUploadFunction} >
+                <FaFileUpload />
+              </button>
+
+              <input
+                type="file"
+                accept=".xlsx"
+                id='fileInput'
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+              />
+
+            </div>
             <div className="flex justify-end gap-4">
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
               {/* Upload is triggered by input change */}
