@@ -2,9 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
-import TableContent from './ui/TableContent';
 import { FaFileUpload } from "react-icons/fa";
-
+import FileUploadModal from './FileUploadModal';
 
 export interface Student {
   id: number;
@@ -20,44 +19,40 @@ export interface Student {
   batch?: string;
 }
 
+const ITEMS_PER_PAGE = 10;
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-
-  const fileInputRef = useRef(null)
-
+  const totalPages = Math.ceil(totalStudents / ITEMS_PER_PAGE);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
 
-
   useEffect(() => {
-    fetchStudents()
-    console.log(students)
-  }, [])
+    fetchStudents(currentPage);
+  }, [currentPage]);
 
-  const fetchStudents = async () => {
-
+  const fetchStudents = async (page: number) => {
     try {
-      const response = await axios.get('http://localhost:3000/students', {
+      const response = await axios.get(`http://localhost:3000/students?page=${page}&limit=${ITEMS_PER_PAGE}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-
-      console.log('API response:', response.data);
-
       setStudents(response.data.data);
+      setTotalStudents(response.data.total);
     } catch (error) {
       console.error('Error fetching students:', error);
     }
   };
-
 
   const handleImport = async (file: File) => {
     const formData = new FormData();
@@ -65,118 +60,107 @@ const Dashboard = () => {
 
     try {
       const response = await axios.post('http://localhost:3000/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       console.log('Upload success:', response.data);
       setIsModalOpen(false);
+      fetchStudents(currentPage);
     } catch (error) {
-      setIsModalOpen(false)
+      setIsModalOpen(false);
       console.error('Upload error:', error);
     }
   };
 
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      handleImport(file);
-    }
+    if (file) handleImport(file);
   };
 
-
   const fileUploadFunction = () => {
-    fileInputRef.current?.click()
-  }
+    fileInputRef.current?.click();
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
-      <header className="bg-white shadow-md py-4 px-6 flex justify-between items-center sticky top-0 z-10">
-        <h1 className="text-2xl font-semibold text-gray-800">Student Dashboard</h1>
+      <header className="bg-white shadow py-4 px-6 flex justify-between items-center sticky top-0 z-10">
+        <h1 className="text-2xl font-bold text-gray-800">🎓 Student Dashboard</h1>
         <div className="flex gap-4">
-          <Button onClick={() => setIsModalOpen(true)}>Import <FaFileUpload /></Button>
+          <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
+            <FaFileUpload /> Import
+          </Button>
           <Button variant="destructive" onClick={handleLogout}>Logout</Button>
         </div>
       </header>
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4">Import Students</h2>
-
-            <div>
-              <button className='hover:scale-150' onClick={fileUploadFunction} >
-                <FaFileUpload />
-              </button>
-
-              <input
-                type="file"
-                accept=".xlsx"
-                id='fileInput'
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-            </div>
-            <div className="flex justify-end gap-4">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-              {/* Upload is triggered by input change */}
-            </div>
-          </div>
-        </div>
+        <FileUploadModal
+          fileUploadFunction={fileUploadFunction}
+          fileInputRef={fileInputRef}
+          handleFileChange={handleFileChange}
+          setIsModalOpen={setIsModalOpen}
+        />
       )}
 
       {/* Table Section */}
       <main className="p-6">
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
-          <table className="min-w-full table-auto">
-            <thead className="bg-gray-200 text-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-sm font-medium uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-sm font-medium uppercase">Course</th>
-                <th className="px-6 py-3 text-left text-sm font-medium uppercase">Batch</th>
-                <th className="px-6 py-3 text-left text-sm font-medium uppercase">Enrollment No.</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-700">
-
-              {/* {
-                students && <TableContent students={students}/> 
-              } */}
-              {students.map((student) => (
-                <tr key={student.id} className="border-b">
-                  <td className="px-6 py-4">{student?.firstName} {student.lastName}</td>
-                  <td className="px-6 py-4">{student?.email}</td>
-                  <td className="px-6 py-4">{student?.course}</td>
-                  <td className="px-6 py-4">{student?.batch}</td>
-                  <td className="px-6 py-4">{student?.enrollmentNumber}</td>
-                </tr>
-              ))}
-
-              {Array.isArray(students) && students.length > 0 ? (
-                students.map((student) =>
-                (
-                  <tr key={student.id} className="border-b">
-                    <td className="px-6 py-4">{student.firstName} {student.lastName}</td>
-                    <td className="px-6 py-4">{student.email}</td>
-                    <td className="px-6 py-4">{student.course}</td>
-                    <td className="px-6 py-4">{student.batch}</td>
-                    <td className="px-6 py-4">{student.enrollmentNumber}</td>
-                  </tr>
-                )
-                )
-              ) : (
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-100 text-gray-700 text-sm uppercase">
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center">No students found</td>
+                  <th className="px-6 py-3 text-left">Name</th>
+                  <th className="px-6 py-3 text-left">Email</th>
+                  <th className="px-6 py-3 text-left">Course</th>
+                  <th className="px-6 py-3 text-left">Batch</th>
+                  <th className="px-6 py-3 text-left">Enrollment No.</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200 text-sm text-gray-700">
+                {students.length > 0 ? (
+                  students.map((student) => (
+                    <tr key={student.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">{student.firstName} {student.lastName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{student.course || '-'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{student.batch || '-'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">{student.enrollmentNumber || '-'}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">No students found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-between items-center p-4 bg-gray-50 border-t">
+              <p className="text-sm text-gray-600">
+                Page {currentPage} of {totalPages}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
