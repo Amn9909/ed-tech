@@ -1,84 +1,87 @@
-# Turborepo starter
+# 🧑‍🎓 Student Management System
 
-This Turborepo starter is maintained by the Turborepo core team.
+A full-stack monorepo application for managing student data. Features include authentication, Excel file import, dashboard UI, and paginated student records.
 
-## Using this example
+---
 
-Run the following command:
-
-```sh
-npx create-turbo@latest
-```
-
-## What's inside?
-
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
+## 📁 Project Structure
 
 ```
-cd my-turborepo
-pnpm build
+.
+├── apps
+│   ├── backend       # NestJS backend application (API, services, database)
+│   └── web-app       # React frontend application (Dashboard, Auth, UI)
+├── docker-compose.yml # Docker setup for services like PostgreSQL
+├── package.json       # Root dependency manager
+├── turbo.json         # TurboRepo config
+└── README.md
 ```
 
-### Develop
+### Key Parts
 
-To develop all apps and packages, run the following command:
+- **apps/backend** – Handles APIs, file uploads, and pagination using NestJS.
+- **apps/web-app** – React UI with student table, import modal, login/signup pages.
+- **docker-compose.yml** – Runs PostgreSQL and other services via Docker.
+- **turbo.json** – Configures workspace for running backend & frontend together.
 
-```
-cd my-turborepo
-pnpm dev
-```
+---
 
-### Remote Caching
+## 🚀 Running the Project Locally
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+### 1. Install dependencies
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+From the root folder:
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
+```bash
+npm install
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+---
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+### 2. Start Docker services
 
+Make sure [Docker](https://www.docker.com/) is running, then:
+
+```bash
+docker compose up
 ```
-npx turbo link
+
+This starts PostgreSQL and any other services.
+
+---
+
+### 3. Start development servers
+
+Open a new terminal and run:
+
+```bash
+npx turbo run dev
 ```
 
-## Useful Links
+This starts both the frontend (`apps/web-app`) and backend (`apps/backend`) development servers.
 
-Learn more about the power of Turborepo:
+---
 
-- [Tasks](https://turbo.build/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/docs/reference/command-line-reference)
+## ✨ Features
+
+- 🔐 Login and Signup functionality
+- 📊 Student dashboard with paginated data
+- 📁 Excel (.xlsx) file upload to import student records
+- ⚙️ Backend with PostgreSQL, TypeORM, NestJS
+- 🌐 Frontend with React, Tailwind CSS, React Router
+- 🧩 TurboRepo for monorepo management
+
+---
+
+## 📬 Contact
+
+If anything doesn't work or you need help, feel free to reach out:
+
+**Email:** [amankazi.dev@gmail.com](mailto:amankazi.dev@gmail.com)
+
+---
+
+## 👑 Owner & Rights
+
+**Owner:** Aman Kazi  
+**© All rights reserved.**
